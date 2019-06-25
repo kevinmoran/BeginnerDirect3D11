@@ -3,7 +3,6 @@
 #include <windows.h>
 #include <d3d11_1.h>
 
-#pragma comment(lib, "d3d11")
 static bool global_isRunning = true;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
