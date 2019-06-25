@@ -8,7 +8,6 @@
 
 static bool global_isRunning = true;
 static bool global_windowDidResize = false;
-static bool global_isInFullscreen = false;
 static bool global_shouldToggleFullscreen = false;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -158,6 +157,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         HRESULT hResult = dxgiFactory->CreateSwapChainForHwnd(d3d11Device, hwnd, &d3d11SwapChainDesc, 0, 0, &d3d11SwapChain);
         assert(SUCCEEDED(hResult));
     }
+    
+    bool isInFullscreen = false;
 
     // Create Framebuffer Render Target
     ID3D11RenderTargetView* d3d11FrameBufferView;
@@ -270,12 +271,17 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         }
 
         if(global_shouldToggleFullscreen){
-            d3d11SwapChain->SetFullscreenState(true, NULL);
+            isInFullscreen = !isInFullscreen;
+            d3d11SwapChain->SetFullscreenState(isInFullscreen, NULL);
             global_shouldToggleFullscreen = false;
         }
 
         if(global_windowDidResize)
         {
+            BOOL fullscreenState;
+            d3d11SwapChain->GetFullscreenState(&fullscreenState, NULL);
+            isInFullscreen = (fullscreenState != 0);
+
             d3d11DeviceContext->OMSetRenderTargets(0, 0, 0);
             d3d11FrameBufferView->Release();
 
