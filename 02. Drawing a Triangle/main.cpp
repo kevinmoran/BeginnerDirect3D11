@@ -109,8 +109,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 #ifdef DEBUG_BUILD
     // Set up debug layer to break on D3D11 errors
     ID3D11Debug *d3dDebug = nullptr;
-    HRESULT hResult = d3d11Device->QueryInterface(__uuidof(ID3D11Debug), (void**)&d3dDebug);
-    if (SUCCEEDED(hResult))
+    d3d11Device->QueryInterface(__uuidof(ID3D11Debug), (void**)&d3dDebug);
+    if (d3dDebug)
     {
         ID3D11InfoQueue *d3dInfoQueue = nullptr;
         if (SUCCEEDED(d3dDebug->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)&d3dInfoQueue)))
@@ -180,7 +180,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         if(FAILED(hResult))
         {
             const char* errorString = NULL;
-            if(hResult == 0x80070002)
+            if(hResult == ERROR_FILE_NOT_FOUND)
                 errorString = "Could not compile shader; file not found";
             else if(shaderCompileErrorsBlob){
                 errorString = (const char*)shaderCompileErrorsBlob->GetBufferPointer();
@@ -203,7 +203,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         if(FAILED(hResult))
         {
             const char* errorString = NULL;
-            if(hResult == 0x80070002)
+            if(hResult == ERROR_FILE_NOT_FOUND)
                 errorString = "Could not compile shader; file not found";
             else if(shaderCompileErrorsBlob){
                 errorString = (const char*)shaderCompileErrorsBlob->GetBufferPointer();
