@@ -37,3 +37,4 @@ These are online resources I found helpful when learning the basics of Direct3D1
 
 * [Handmade Hero](http://www.handmadehero.org)
 * [Minimal D3D11 Reference by d7samurai](https://gist.github.com/d7samurai/261c69490cce0620d0bfc93003cd1052)
+* [Introduction to DirectX 11 by Jeremiah van Oosten](https://www.3dgep.com/introduction-to-directx-11/)
