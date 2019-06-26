@@ -6,8 +6,11 @@
 
 #include <assert.h>
 
+static bool global_isPaused = false;
 static bool global_windowDidResize = false;
 static bool global_shouldToggleFullscreen = false;
+static bool global_isInFullscreen = false;
+static bool global_shouldReturnToFullscreenAfterAltTab = false;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -20,6 +23,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
                 DestroyWindow(hwnd);
             else if(wparam == 'F')
                 global_shouldToggleFullscreen = true;
+            break;
+        }
+        case WM_ACTIVATE:
+        case WM_ACTIVATEAPP:
+        {
+            if(wparam == 0){
+                global_isPaused = true;
+                global_shouldReturnToFullscreenAfterAltTab = global_isInFullscreen;
+                if(global_isInFullscreen) // If we alt-tab when in fullscreen, minimise
+                    ShowWindow(hwnd, SW_MINIMIZE);
+            }
+            else {
+                global_isPaused = false;
+                global_shouldToggleFullscreen = global_shouldReturnToFullscreenAfterAltTab;
+            }
             break;
         }
         case WM_DESTROY:
@@ -157,8 +175,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         assert(SUCCEEDED(hResult));
     }
     
-    bool isInFullscreen = false;
-
     // Create Framebuffer Render Target
     ID3D11RenderTargetView* d3d11FrameBufferView;
     {
@@ -273,8 +289,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         }
 
         if(global_shouldToggleFullscreen){
-            isInFullscreen = !isInFullscreen;
-            d3d11SwapChain->SetFullscreenState(isInFullscreen, NULL);
+            global_isInFullscreen = !global_isInFullscreen;
+            d3d11SwapChain->SetFullscreenState(global_isInFullscreen, NULL);
             global_shouldToggleFullscreen = false;
         }
 
@@ -282,7 +298,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         {
             BOOL fullscreenState;
             d3d11SwapChain->GetFullscreenState(&fullscreenState, NULL);
-            isInFullscreen = (fullscreenState != 0);
+            global_isInFullscreen = (fullscreenState != 0);
 
             d3d11DeviceContext->OMSetRenderTargets(0, 0, 0);
             d3d11FrameBufferView->Release();
@@ -302,26 +318,28 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
             global_windowDidResize = false;
         }
 
-        FLOAT backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
-        d3d11DeviceContext->ClearRenderTargetView(d3d11FrameBufferView, backgroundColor);
+        if(!global_isPaused)
+        {
+            FLOAT backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
+            d3d11DeviceContext->ClearRenderTargetView(d3d11FrameBufferView, backgroundColor);
 
-        RECT winRect;
-        GetClientRect(hwnd, &winRect);
-        D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (FLOAT)(winRect.right - winRect.left), (FLOAT)(winRect.bottom - winRect.top), 0.0f, 1.0f };
-        d3d11DeviceContext->RSSetViewports(1, &viewport);
+            RECT winRect;
+            GetClientRect(hwnd, &winRect);
+            D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (FLOAT)(winRect.right - winRect.left), (FLOAT)(winRect.bottom - winRect.top), 0.0f, 1.0f };
+            d3d11DeviceContext->RSSetViewports(1, &viewport);
 
-        d3d11DeviceContext->OMSetRenderTargets(1, &d3d11FrameBufferView, nullptr);
+            d3d11DeviceContext->OMSetRenderTargets(1, &d3d11FrameBufferView, nullptr);
 
-        d3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        d3d11DeviceContext->IASetInputLayout(inputLayout);
+            d3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            d3d11DeviceContext->IASetInputLayout(inputLayout);
 
-        d3d11DeviceContext->VSSetShader(vertexShader, nullptr, 0);
-        d3d11DeviceContext->PSSetShader(pixelShader, nullptr, 0);
+            d3d11DeviceContext->VSSetShader(vertexShader, nullptr, 0);
+            d3d11DeviceContext->PSSetShader(pixelShader, nullptr, 0);
 
-        d3d11DeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+            d3d11DeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 
-        d3d11DeviceContext->Draw(numVerts, 0);
-
+            d3d11DeviceContext->Draw(numVerts, 0);
+        }
         d3d11SwapChain->Present(1, 0);
     }
 
