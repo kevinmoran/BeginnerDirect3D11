@@ -6,7 +6,6 @@
 
 #include <assert.h>
 
-static bool global_isRunning = true;
 static bool global_windowDidResize = false;
 static bool global_shouldToggleFullscreen = false;
 
@@ -18,20 +17,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case WM_KEYDOWN:
         {
             if(wparam == VK_ESCAPE)
-                global_isRunning = false;
+                DestroyWindow(hwnd);
             else if(wparam == 'F')
                 global_shouldToggleFullscreen = true;
             break;
         }
         case WM_DESTROY:
         {
-            global_isRunning = false;
             PostQuitMessage(0);
             break;
         }
         case WM_SIZE:
         {
             global_windowDidResize = true;
+            break;
         }
         default:
             result = DefWindowProc(hwnd, msg, wparam, lparam);
@@ -260,14 +259,17 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     }
 
     // Main Loop
-    global_isRunning = true;
-    while(global_isRunning)
+    bool isRunning = true;
+    while(isRunning)
     {
-        MSG message = {};
-        while(PeekMessage(&message, 0, 0, 0, PM_REMOVE))
+        MSG msg = {};
+        while(PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
         {
-            TranslateMessage(&message);
-            DispatchMessage(&message);
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        if(msg.message == WM_QUIT){
+            break;
         }
 
         if(global_shouldToggleFullscreen){
