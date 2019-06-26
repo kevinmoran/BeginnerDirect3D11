@@ -265,11 +265,11 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         MSG msg = {};
         while(PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
         {
+            if(msg.message == WM_QUIT){
+                isRunning = false;
+            }
             TranslateMessage(&msg);
             DispatchMessage(&msg);
-        }
-        if(msg.message == WM_QUIT){
-            break;
         }
 
         if(global_shouldToggleFullscreen){
