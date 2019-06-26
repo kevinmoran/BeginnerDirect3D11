@@ -1,3 +1,3 @@
-*/.vscode/ipch/*
+**/.vscode/ipch/
 .vs/
 build/
