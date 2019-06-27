@@ -35,6 +35,7 @@ Additionally I have included configuration files for building/running the code u
 ## Resources
 These are online resources I found helpful when learning the basics of Direct3D11/Win32 programming.
 
-* [Handmade Hero](http://www.handmadehero.org)
+* [Handmade Hero by Casey Muratori](http://www.handmadehero.org)
 * [Minimal D3D11 Reference by d7samurai](https://gist.github.com/d7samurai/261c69490cce0620d0bfc93003cd1052)
 * [Introduction to DirectX 11 by Jeremiah van Oosten](https://www.3dgep.com/introduction-to-directx-11/)
+* [DirectXTutorial.com by Chris Hanson](http://www.directxtutorial.com/LessonList.aspx?listid=11)
