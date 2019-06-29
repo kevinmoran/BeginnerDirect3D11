@@ -1,26 +1,26 @@
 
-struct VertexInput
+struct VS_Input
 {
     float2 pos : POS;
     float4 color : COL;
 };
 
-struct ShaderInOut
+struct VS_Output
 {
     float4 position : SV_POSITION;
     float4 color : COL;
 };
 
-ShaderInOut vs_main(VertexInput input)
+VS_Output vs_main(VS_Input input)
 {
-    ShaderInOut output;
+    VS_Output output;
     output.position = float4(input.pos, 0.0f, 1.0f);
     output.color = input.color;    
 
     return output;
 }
 
-float4 ps_main(ShaderInOut input) : SV_TARGET
+float4 ps_main(VS_Output input) : SV_TARGET
 {
     return input.color;   
 }
