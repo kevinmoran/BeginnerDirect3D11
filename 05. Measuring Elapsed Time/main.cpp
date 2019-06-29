@@ -366,7 +366,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
         if(!global_isPaused)
         {
-    
             // Modulate player's y-position
             float2 playerPos = {};
             const float posCycleAmplitude = 0.5f;
