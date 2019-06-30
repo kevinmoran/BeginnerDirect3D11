@@ -146,7 +146,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
     HWND hwnd = CreateWindowEx( WS_EX_OVERLAPPEDWINDOW,
                                 winClass.lpszClassName,
-                                "06. Keyboard Input",
+                                "07. Virtual Camera",
                                 WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                                 CW_USEDEFAULT, CW_USEDEFAULT,
                                 initialWidth, 
