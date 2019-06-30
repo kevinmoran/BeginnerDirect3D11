@@ -212,7 +212,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         assert(SUCCEEDED(hResult));
     }
 
-// Create Pixel Shader
+    // Create Pixel Shader
     ID3D11PixelShader* pixelShader;
     {
         ID3DBlob* psBlob;

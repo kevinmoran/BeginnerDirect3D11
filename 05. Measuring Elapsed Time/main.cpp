@@ -27,8 +27,8 @@ double win32GetCurrentTimeInSeconds(LARGE_INTEGER perfCounterFrequency)
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     LRESULT result = 0;
-	switch(msg)
-	{
+    switch(msg)
+    {
         case WM_KEYDOWN:
         {
             if(wparam == VK_ESCAPE)
@@ -52,45 +52,45 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             }
             break;
         }
-		case WM_DESTROY:
-		{
-			PostQuitMessage(0);
-			break;
-		}
+        case WM_DESTROY:
+        {
+            PostQuitMessage(0);
+            break;
+        }
         case WM_SIZE:
         {
             global_windowDidResize = true;
             break;
         }
         default:
-	        result = DefWindowProc(hwnd, msg, wparam, lparam);
-	}
+            result = DefWindowProc(hwnd, msg, wparam, lparam);
+    }
     return result;
 }
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	WNDCLASSEX winClass = {};
-	winClass.cbSize = sizeof(WNDCLASSEX);
+    WNDCLASSEX winClass = {};
+    winClass.cbSize = sizeof(WNDCLASSEX);
     winClass.style = CS_HREDRAW | CS_VREDRAW;
-	winClass.lpfnWndProc = &WndProc;
-	winClass.hInstance = hInstance;
-	winClass.hIcon = LoadIcon(0, IDI_APPLICATION);
-	winClass.hCursor = LoadCursor(0, IDC_ARROW);
-	winClass.lpszClassName = "MyWindowClass";
-	winClass.hIconSm = LoadIcon(0, IDI_APPLICATION);
+    winClass.lpfnWndProc = &WndProc;
+    winClass.hInstance = hInstance;
+    winClass.hIcon = LoadIcon(0, IDI_APPLICATION);
+    winClass.hCursor = LoadCursor(0, IDC_ARROW);
+    winClass.lpszClassName = "MyWindowClass";
+    winClass.hIconSm = LoadIcon(0, IDI_APPLICATION);
 
-	if(!RegisterClassEx(&winClass)) {
+    if(!RegisterClassEx(&winClass)) {
         MessageBoxA(0, "RegisterClassEx failed", "Fatal Error", MB_OK);
-		return GetLastError();
+        return GetLastError();
     }
 
-	RECT initialRect = { 0, 0, 1024, 768 };
-	AdjustWindowRectEx(&initialRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
+    RECT initialRect = { 0, 0, 1024, 768 };
+    AdjustWindowRectEx(&initialRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
     LONG initialWidth = initialRect.right - initialRect.left;
     LONG initialHeight = initialRect.bottom - initialRect.top;
 
-	HWND hwnd = CreateWindowEx( WS_EX_OVERLAPPEDWINDOW,
+    HWND hwnd = CreateWindowEx( WS_EX_OVERLAPPEDWINDOW,
                                 winClass.lpszClassName,
                                 "05. Measuring Elapsed Time",
                                 WS_OVERLAPPEDWINDOW | WS_VISIBLE,
@@ -99,9 +99,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                                 initialHeight,
                                 0, 0, hInstance, 0);
 
-	if(!hwnd) {
+    if(!hwnd) {
         MessageBoxA(0, "CreateWindowEx failed", "Fatal Error", MB_OK);
-		return GetLastError();
+        return GetLastError();
     }
 
     // Create D3D11 Device and Context
@@ -222,7 +222,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         assert(SUCCEEDED(hResult));
     }
 
-// Create Pixel Shader
+    // Create Pixel Shader
     ID3D11PixelShader* pixelShader;
     {
         ID3DBlob* psBlob;
@@ -416,5 +416,5 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         d3d11SwapChain->Present(1, 0);
     }
 
-	return 0;
+    return 0;
 }
