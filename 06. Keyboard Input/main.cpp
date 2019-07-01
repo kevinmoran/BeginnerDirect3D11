@@ -40,47 +40,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     switch(msg)
     {
         case WM_KEYDOWN:
+        case WM_KEYUP:
         {
+            bool isDown = (msg == WM_KEYDOWN);
             if(wparam == VK_ESCAPE)
                 DestroyWindow(hwnd);
             else if(wparam == 'F')
                 global_shouldToggleFullscreen = true;
             else if(wparam == 'W')
-                global_keyIsDown[GameActionMoveUp] = true;
+                global_keyIsDown[GameActionMoveUp] = isDown;
             else if(wparam == 'A')
-                global_keyIsDown[GameActionMoveLeft] = true;
+                global_keyIsDown[GameActionMoveLeft] = isDown;
             else if(wparam == 'S')
-                global_keyIsDown[GameActionMoveDown] = true;
+                global_keyIsDown[GameActionMoveDown] = isDown;
             else if(wparam == 'D')
-                global_keyIsDown[GameActionMoveRight] = true;
+                global_keyIsDown[GameActionMoveRight] = isDown;
             else if(wparam == VK_UP)
-                global_keyIsDown[GameActionMoveUp] = true;
+                global_keyIsDown[GameActionMoveUp] = isDown;
             else if(wparam == VK_LEFT)
-                global_keyIsDown[GameActionMoveLeft] = true;
+                global_keyIsDown[GameActionMoveLeft] = isDown;
             else if(wparam == VK_DOWN)
-                global_keyIsDown[GameActionMoveDown] = true;
+                global_keyIsDown[GameActionMoveDown] = isDown;
             else if(wparam == VK_RIGHT)
-                global_keyIsDown[GameActionMoveRight] = true;
-            break;
-        }
-        case WM_KEYUP:
-        {
-            if(wparam == 'W')
-                global_keyIsDown[GameActionMoveUp] = false;
-            else if(wparam == 'A')
-                global_keyIsDown[GameActionMoveLeft] = false;
-            else if(wparam == 'S')
-                global_keyIsDown[GameActionMoveDown] = false;
-            else if(wparam == 'D')
-                global_keyIsDown[GameActionMoveRight] = false;
-            else if(wparam == VK_UP)
-                global_keyIsDown[GameActionMoveUp] = false;
-            else if(wparam == VK_LEFT)
-                global_keyIsDown[GameActionMoveLeft] = false;
-            else if(wparam == VK_DOWN)
-                global_keyIsDown[GameActionMoveDown] = false;
-            else if(wparam == VK_RIGHT)
-                global_keyIsDown[GameActionMoveRight] = false;
+                global_keyIsDown[GameActionMoveRight] = isDown;
             break;
         }
         case WM_ACTIVATE:
