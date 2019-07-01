@@ -56,21 +56,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             else if(wparam == 'F')
                 global_shouldToggleFullscreen = true;
             else if(wparam == 'W')
-                global_keyIsDown[GameActionMoveUp] = isDown;
+                global_keyIsDown[GameActionMoveCamFwd] = isDown;
             else if(wparam == 'A')
-                global_keyIsDown[GameActionMoveLeft] = isDown;
+                global_keyIsDown[GameActionMoveCamLeft] = isDown;
             else if(wparam == 'S')
-                global_keyIsDown[GameActionMoveDown] = isDown;
+                global_keyIsDown[GameActionMoveCamBack] = isDown;
             else if(wparam == 'D')
-                global_keyIsDown[GameActionMoveRight] = isDown;
+                global_keyIsDown[GameActionMoveCamRight] = isDown;
             else if(wparam == VK_UP)
-                global_keyIsDown[GameActionMoveUp] = isDown;
+                global_keyIsDown[GameActionLookUp] = isDown;
             else if(wparam == VK_LEFT)
-                global_keyIsDown[GameActionMoveLeft] = isDown;
+                global_keyIsDown[GameActionTurnCamLeft] = isDown;
             else if(wparam == VK_DOWN)
-                global_keyIsDown[GameActionMoveDown] = isDown;
+                global_keyIsDown[GameActionLookDown] = isDown;
             else if(wparam == VK_RIGHT)
-                global_keyIsDown[GameActionMoveRight] = isDown;
+                global_keyIsDown[GameActionTurnCamRight] = isDown;
             break;
         }
         case WM_ACTIVATE:
