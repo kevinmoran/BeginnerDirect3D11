@@ -31,7 +31,7 @@ inline float degreesToRadians(float degs)
 
 inline float length(float3 v)
 {
-    float result = v.x*v.x + v.y*v.y + v.z*v.z;
+    float result = sqrtf(v.x*v.x + v.y*v.y + v.z*v.z);
     return result;
 }
 
@@ -116,12 +116,12 @@ inline float4x4 translationMat(float3 trans)
     return result;
 }
 
-inline float4x4 makePerspectiveMat(float aspectRatio, float fovY, float zNear, float zFar)
+inline float4x4 makePerspectiveMat(float aspectRatio, float fovYRadians, float zNear, float zFar)
 {
-    // float yScale = 1 / tanf(0.5f * fovY); 
+    // float yScale = 1 / tanf(0.5f * fovYRadians); 
     // NOTE: 1/tan(X) = tan(90degs - X), so we can avoid a divide
-    // float yScale = tanf((0.5f * M_PI) - (0.5f * fovY));
-    float yScale = tanf(0.5f * (M_PI - fovY));
+    // float yScale = tanf((0.5f * M_PI) - (0.5f * fovYRadians));
+    float yScale = tanf(0.5f * (M_PI - fovYRadians));
     float xScale = yScale / aspectRatio;
     float zRangeInverse = 1.f / (zNear - zFar);
     float zScale = zFar * zRangeInverse;
