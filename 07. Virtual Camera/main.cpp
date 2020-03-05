@@ -504,10 +504,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
             if(global_keyIsDown[GameActionLookDown])
                 cameraPitch -= CAM_TURN_AMOUNT;
 
-            // Clamp yaw to avoid floating-point errors if we turn too far
+            // Wrap yaw to avoid floating-point errors if we turn too far
             while(cameraYaw >= 2*M_PI) 
                 cameraYaw -= 2*M_PI;
-            while(cameraYaw <= 2*M_PI) 
+            while(cameraYaw <= -2*M_PI) 
                 cameraYaw += 2*M_PI;
 
             // Clamp pitch to stop camera flipping upside down
