@@ -1,8 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#define UNICODE
 #include <windows.h>
-
-static bool global_isRunning = true;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -12,65 +11,70 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case WM_KEYDOWN:
         {
             if(wparam == VK_ESCAPE)
-                global_isRunning = false;
+                DestroyWindow(hwnd);
             break;
         }
         case WM_DESTROY:
         {
-            global_isRunning = false;
             PostQuitMessage(0);
             break;
         }
         default:
-            result = DefWindowProc(hwnd, msg, wparam, lparam);
+            result = DefWindowProcW(hwnd, msg, wparam, lparam);
     }
     return result;
 }
 
-int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
-    WNDCLASSEX winClass = {};
-    winClass.cbSize = sizeof(WNDCLASSEX);
-    winClass.style = CS_HREDRAW | CS_VREDRAW;
-    winClass.lpfnWndProc = &WndProc;
-    winClass.hInstance = hInstance;
-    winClass.hIcon = LoadIcon(0, IDI_APPLICATION);
-    winClass.hCursor = LoadCursor(0, IDC_ARROW);
-    winClass.lpszClassName = "MyWindowClass";
-    winClass.hIconSm = LoadIcon(0, IDI_APPLICATION);
+    // Open a window
+    HWND hwnd;
+    {
+        WNDCLASSEXW winClass = {};
+        winClass.cbSize = sizeof(WNDCLASSEXW);
+        winClass.style = CS_HREDRAW | CS_VREDRAW;
+        winClass.lpfnWndProc = &WndProc;
+        winClass.hInstance = hInstance;
+        winClass.hIcon = LoadIconW(0, IDI_APPLICATION);
+        winClass.hCursor = LoadCursorW(0, IDC_ARROW);
+        winClass.lpszClassName = L"MyWindowClass";
+        winClass.hIconSm = LoadIconW(0, IDI_APPLICATION);
 
-    if(!RegisterClassEx(&winClass)) {
-        MessageBoxA(0, "RegisterClassEx failed", "Fatal Error", MB_OK);
-        return GetLastError();
-    }
+        if(!RegisterClassExW(&winClass)) {
+            MessageBoxA(0, "RegisterClassEx failed", "Fatal Error", MB_OK);
+            return GetLastError();
+        }
 
-    RECT initialRect = { 0, 0, 1024, 768 };
-    AdjustWindowRectEx(&initialRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
-    LONG initialWidth = initialRect.right - initialRect.left;
-    LONG initialHeight = initialRect.bottom - initialRect.top;
+        RECT initialRect = { 0, 0, 1024, 768 };
+        AdjustWindowRectEx(&initialRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
+        LONG initialWidth = initialRect.right - initialRect.left;
+        LONG initialHeight = initialRect.bottom - initialRect.top;
 
-    HWND hwnd = CreateWindowEx( WS_EX_OVERLAPPEDWINDOW,
+        hwnd = CreateWindowExW(WS_EX_OVERLAPPEDWINDOW,
                                 winClass.lpszClassName,
-                                "00. Opening a Win32 Window",
+                                L"00. Opening a Win32 Window",
                                 WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                                 CW_USEDEFAULT, CW_USEDEFAULT,
                                 initialWidth, 
                                 initialHeight,
                                 0, 0, hInstance, 0);
 
-    if(!hwnd) {
-        MessageBoxA(0, "CreateWindowEx failed", "Fatal Error", MB_OK);
-        return GetLastError();
+        if(!hwnd) {
+            MessageBoxA(0, "CreateWindowEx failed", "Fatal Error", MB_OK);
+            return GetLastError();
+        }
     }
 
-    global_isRunning = true;
-    while(global_isRunning)
+    bool isRunning = true;
+    while(isRunning)
     {
         MSG message = {};
-        while(PeekMessage(&message, 0, 0, 0, PM_REMOVE))
+        while(PeekMessageW(&message, 0, 0, 0, PM_REMOVE))
         {
+            if(message.message == WM_QUIT)
+                isRunning = false;
             TranslateMessage(&message);
-            DispatchMessage(&message);
+            DispatchMessageW(&message);
         }
 
         Sleep(1);

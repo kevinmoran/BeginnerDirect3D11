@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#define UNICODE
 #include <windows.h>
 #include <d3d11_1.h>
 #include <d3dcompiler.h>
@@ -8,11 +9,7 @@
 
 #include "3DMaths.h"
 
-static bool global_isPaused = false;
 static bool global_windowDidResize = false;
-static bool global_shouldToggleFullscreen = false;
-static bool global_isInFullscreen = false;
-static bool global_shouldReturnToFullscreenAfterAltTab = false;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -23,23 +20,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         {
             if(wparam == VK_ESCAPE)
                 DestroyWindow(hwnd);
-            else if(wparam == 'F')
-                global_shouldToggleFullscreen = true;
-            break;
-        }
-        case WM_ACTIVATE:
-        case WM_ACTIVATEAPP:
-        {
-            if(wparam == 0){
-                global_isPaused = true;
-                global_shouldReturnToFullscreenAfterAltTab = global_isInFullscreen;
-                if(global_isInFullscreen) // If we alt-tab when in fullscreen, minimise
-                    ShowWindow(hwnd, SW_MINIMIZE);
-            }
-            else {
-                global_isPaused = false;
-                global_shouldToggleFullscreen = global_shouldReturnToFullscreenAfterAltTab;
-            }
             break;
         }
         case WM_DESTROY:
@@ -53,45 +33,49 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             break;
         }
         default:
-            result = DefWindowProc(hwnd, msg, wparam, lparam);
+            result = DefWindowProcW(hwnd, msg, wparam, lparam);
     }
     return result;
 }
 
-int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
-    WNDCLASSEX winClass = {};
-    winClass.cbSize = sizeof(WNDCLASSEX);
-    winClass.style = CS_HREDRAW | CS_VREDRAW;
-    winClass.lpfnWndProc = &WndProc;
-    winClass.hInstance = hInstance;
-    winClass.hIcon = LoadIcon(0, IDI_APPLICATION);
-    winClass.hCursor = LoadCursor(0, IDC_ARROW);
-    winClass.lpszClassName = "MyWindowClass";
-    winClass.hIconSm = LoadIcon(0, IDI_APPLICATION);
+    // Open a window
+    HWND hwnd;
+    {
+        WNDCLASSEXW winClass = {};
+        winClass.cbSize = sizeof(WNDCLASSEXW);
+        winClass.style = CS_HREDRAW | CS_VREDRAW;
+        winClass.lpfnWndProc = &WndProc;
+        winClass.hInstance = hInstance;
+        winClass.hIcon = LoadIconW(0, IDI_APPLICATION);
+        winClass.hCursor = LoadCursorW(0, IDC_ARROW);
+        winClass.lpszClassName = L"MyWindowClass";
+        winClass.hIconSm = LoadIconW(0, IDI_APPLICATION);
 
-    if(!RegisterClassEx(&winClass)) {
-        MessageBoxA(0, "RegisterClassEx failed", "Fatal Error", MB_OK);
-        return GetLastError();
-    }
+        if(!RegisterClassExW(&winClass)) {
+            MessageBoxA(0, "RegisterClassEx failed", "Fatal Error", MB_OK);
+            return GetLastError();
+        }
 
-    RECT initialRect = { 0, 0, 1024, 768 };
-    AdjustWindowRectEx(&initialRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
-    LONG initialWidth = initialRect.right - initialRect.left;
-    LONG initialHeight = initialRect.bottom - initialRect.top;
+        RECT initialRect = { 0, 0, 1024, 768 };
+        AdjustWindowRectEx(&initialRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
+        LONG initialWidth = initialRect.right - initialRect.left;
+        LONG initialHeight = initialRect.bottom - initialRect.top;
 
-    HWND hwnd = CreateWindowEx( WS_EX_OVERLAPPEDWINDOW,
+        hwnd = CreateWindowExW(WS_EX_OVERLAPPEDWINDOW,
                                 winClass.lpszClassName,
-                                "04. Using a Constant Buffer",
+                                L"04. Using a Constant Buffer",
                                 WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                                 CW_USEDEFAULT, CW_USEDEFAULT,
                                 initialWidth, 
                                 initialHeight,
                                 0, 0, hInstance, 0);
 
-    if(!hwnd) {
-        MessageBoxA(0, "CreateWindowEx failed", "Fatal Error", MB_OK);
-        return GetLastError();
+        if(!hwnd) {
+            MessageBoxA(0, "CreateWindowEx failed", "Fatal Error", MB_OK);
+            return GetLastError();
+        }
     }
 
     // Create D3D11 Device and Context
@@ -119,9 +103,11 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         // Get 1.1 interface of D3D11 Device and Context
         hResult = baseDevice->QueryInterface(__uuidof(ID3D11Device1), (void**)&d3d11Device);
         assert(SUCCEEDED(hResult));
+        baseDevice->Release();
 
         hResult = baseDeviceContext->QueryInterface(__uuidof(ID3D11DeviceContext1), (void**)&d3d11DeviceContext);
         assert(SUCCEEDED(hResult));
+        baseDeviceContext->Release();
     }
 
 #ifdef DEBUG_BUILD
@@ -151,19 +137,26 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         IDXGIAdapter* dxgiAdapter;
         hResult = dxgiDevice->GetAdapter(&dxgiAdapter);
         assert(SUCCEEDED(hResult));
+        dxgiDevice->Release();
+
+        DXGI_ADAPTER_DESC adapterDesc;
+        dxgiAdapter->GetDesc(&adapterDesc);
+
+        OutputDebugStringA("Graphics Device: ");
+        OutputDebugStringW(adapterDesc.Description);
 
         hResult = dxgiAdapter->GetParent(__uuidof(IDXGIFactory2), (void**)&dxgiFactory);
         assert(SUCCEEDED(hResult));
+        dxgiAdapter->Release();
     }
     
     // Create Swap Chain
     IDXGISwapChain1* d3d11SwapChain;
     {
-        DXGI_SWAP_CHAIN_DESC1 d3d11SwapChainDesc;
+        DXGI_SWAP_CHAIN_DESC1 d3d11SwapChainDesc = {};
         d3d11SwapChainDesc.Width = 0; // use window width
         d3d11SwapChainDesc.Height = 0; // use window height
         d3d11SwapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-        d3d11SwapChainDesc.Stereo = FALSE;
         d3d11SwapChainDesc.SampleDesc.Count = 1;
         d3d11SwapChainDesc.SampleDesc.Quality = 0;
         d3d11SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -198,7 +191,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         if(FAILED(hResult))
         {
             const char* errorString = NULL;
-            if(hResult == ERROR_FILE_NOT_FOUND)
+            if(hResult == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
                 errorString = "Could not compile shader; file not found";
             else if(shaderCompileErrorsBlob){
                 errorString = (const char*)shaderCompileErrorsBlob->GetBufferPointer();
@@ -221,7 +214,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         if(FAILED(hResult))
         {
             const char* errorString = NULL;
-            if(hResult == ERROR_FILE_NOT_FOUND)
+            if(hResult == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
                 errorString = "Could not compile shader; file not found";
             else if(shaderCompileErrorsBlob){
                 errorString = (const char*)shaderCompileErrorsBlob->GetBufferPointer();
@@ -239,10 +232,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     // Create Input Layout
     ID3D11InputLayout* inputLayout;
     {
-    D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
-    {
-        { "POS", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-    };
+        D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
+        {
+            { "POS", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+        };
 
         HRESULT hResult = d3d11Device->CreateInputLayout(inputElementDesc, ARRAYSIZE(inputElementDesc), vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &inputLayout);
         assert(SUCCEEDED(hResult));
@@ -282,12 +275,14 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     struct Constants
     {
         float2 pos;
+        float2 paddingUnused; // color (below) needs to be 16-byte aligned! 
         float4 color;
     };
 
     ID3D11Buffer* constantBuffer;
     {
         D3D11_BUFFER_DESC constantBufferDesc = {};
+        // ByteWidth must be a multiple of 16, per the docs
         constantBufferDesc.ByteWidth      = sizeof(Constants) + 0xf & 0xfffffff0;
         constantBufferDesc.Usage          = D3D11_USAGE_DYNAMIC;
         constantBufferDesc.BindFlags      = D3D11_BIND_CONSTANT_BUFFER;
@@ -302,27 +297,16 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     while(isRunning)
     {
         MSG msg = {};
-        while(PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+        while(PeekMessageW(&msg, 0, 0, 0, PM_REMOVE))
         {
-            if(msg.message == WM_QUIT){
+            if(msg.message == WM_QUIT)
                 isRunning = false;
-            }
             TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-
-        if(global_shouldToggleFullscreen){
-            global_isInFullscreen = !global_isInFullscreen;
-            d3d11SwapChain->SetFullscreenState(global_isInFullscreen, NULL);
-            global_shouldToggleFullscreen = false;
+            DispatchMessageW(&msg);
         }
 
         if(global_windowDidResize)
         {
-            BOOL fullscreenState;
-            d3d11SwapChain->GetFullscreenState(&fullscreenState, NULL);
-            global_isInFullscreen = (fullscreenState != 0);
-
             d3d11DeviceContext->OMSetRenderTargets(0, 0, 0);
             d3d11FrameBufferView->Release();
 
@@ -341,38 +325,35 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
             global_windowDidResize = false;
         }
 
-        if(!global_isPaused)
-        {
-            D3D11_MAPPED_SUBRESOURCE mappedSubresource;
-            d3d11DeviceContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubresource);
+        D3D11_MAPPED_SUBRESOURCE mappedSubresource;
+        d3d11DeviceContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubresource);
+        Constants* constants = (Constants*)(mappedSubresource.pData);
+        constants->pos = {0.25f, 0.3f};
+        constants->color = {0.7f, 0.65f, 0.1f, 1.f};
+        d3d11DeviceContext->Unmap(constantBuffer, 0);
 
-            Constants* constants = (Constants*)(mappedSubresource.pData);
-            constants->pos = {0.25f, 0.3f};
-            constants->color = {0.7f, 0.65f, 0.1f, 1.f};
-            d3d11DeviceContext->Unmap(constantBuffer, 0);
+        FLOAT backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
+        d3d11DeviceContext->ClearRenderTargetView(d3d11FrameBufferView, backgroundColor);
 
-            FLOAT backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
-            d3d11DeviceContext->ClearRenderTargetView(d3d11FrameBufferView, backgroundColor);
+        RECT winRect;
+        GetClientRect(hwnd, &winRect);
+        D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (FLOAT)(winRect.right - winRect.left), (FLOAT)(winRect.bottom - winRect.top), 0.0f, 1.0f };
+        d3d11DeviceContext->RSSetViewports(1, &viewport);
 
-            RECT winRect;
-            GetClientRect(hwnd, &winRect);
-            D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (FLOAT)(winRect.right - winRect.left), (FLOAT)(winRect.bottom - winRect.top), 0.0f, 1.0f };
-            d3d11DeviceContext->RSSetViewports(1, &viewport);
+        d3d11DeviceContext->OMSetRenderTargets(1, &d3d11FrameBufferView, nullptr);
 
-            d3d11DeviceContext->OMSetRenderTargets(1, &d3d11FrameBufferView, nullptr);
+        d3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        d3d11DeviceContext->IASetInputLayout(inputLayout);
 
-            d3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            d3d11DeviceContext->IASetInputLayout(inputLayout);
+        d3d11DeviceContext->VSSetShader(vertexShader, nullptr, 0);
+        d3d11DeviceContext->PSSetShader(pixelShader, nullptr, 0);
 
-            d3d11DeviceContext->VSSetShader(vertexShader, nullptr, 0);
-            d3d11DeviceContext->PSSetShader(pixelShader, nullptr, 0);
+        d3d11DeviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 
-            d3d11DeviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+        d3d11DeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 
-            d3d11DeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-
-            d3d11DeviceContext->Draw(numVerts, 0);
-        }
+        d3d11DeviceContext->Draw(numVerts, 0);
+    
         d3d11SwapChain->Present(1, 0);
     }
 

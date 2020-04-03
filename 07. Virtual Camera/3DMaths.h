@@ -26,7 +26,7 @@ struct float4x4
 
 inline float degreesToRadians(float degs)
 {
-    return degs * (M_PI / 180.0f);
+    return degs * ((float)M_PI / 180.0f);
 }
 
 inline float length(float3 v)
@@ -121,7 +121,7 @@ inline float4x4 makePerspectiveMat(float aspectRatio, float fovYRadians, float z
     // float yScale = 1 / tanf(0.5f * fovYRadians); 
     // NOTE: 1/tan(X) = tan(90degs - X), so we can avoid a divide
     // float yScale = tanf((0.5f * M_PI) - (0.5f * fovYRadians));
-    float yScale = tanf(0.5f * (M_PI - fovYRadians));
+    float yScale = tanf(0.5f * ((float)M_PI - fovYRadians));
     float xScale = yScale / aspectRatio;
     float zRangeInverse = 1.f / (zNear - zFar);
     float zScale = zFar * zRangeInverse;
