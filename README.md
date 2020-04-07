@@ -39,3 +39,6 @@ These are online resources I found helpful when learning the basics of Direct3D1
 * [Minimal D3D11 Reference by d7samurai](https://gist.github.com/d7samurai/261c69490cce0620d0bfc93003cd1052)
 * [Introduction to DirectX 11 by Jeremiah van Oosten](https://www.3dgep.com/introduction-to-directx-11/)
 * [DirectXTutorial.com by Chris Hanson](http://www.directxtutorial.com/LessonList.aspx?listid=11)
+* [Direct3D 11 Functional Specification](https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm) Thanks to Github user procedural for the suggestion
+* [Official Microsoft Programming Guide for Direct3D 11](https://docs.microsoft.com/en-us/windows/win32/direct3d11/dx-graphics-overviews)
+
