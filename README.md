@@ -6,9 +6,11 @@ Released into the public domain under the Unlicense, see LICENSE.txt. No warrant
 
 ## Code style and ethos
 
-This repository is provided as the resource I wish I had for learning Direct3D11. While tutorials and other samples exist, they are often overcomplicated for simply illustrating basic usage of the API to a beginner. In particular I've seen the simplest code for drawing a triangle split up into several classes and files which make the code flow very hard to follow.
+This repository is provided as the resource I wish I had for learning Direct3D11. While tutorials and other samples exist, they are often overcomplicated for simply illustrating basic usage of the API to a beginner. In particular I've seen the simplest code for drawing a triangle split up into several classes and files which make the code flow very hard to follow. 
 
-My goal is to provide a straightforward, linear series of API calls that you can follow along with; everything is written in a procedural (C-like) style rather than abstracting code away into container classes. As a result this 
+My goal is to provide a straightforward, linear series of API calls that you can follow along with; everything is written in a procedural (C-like) style rather than abstracting code away into container classes.
+
+Additionally I have split this repo into smaller sub-projects that gradually introduce new concepts important for realtime graphics and game programming. Hopefully this makes approaching these topics a bit easier.
 
 This is *not* intended to be a tutorial. If you are using this as a learning resource you will have to look up the documentation for the Win32 and Direct3D structs/functions being used to get a good understanding of what is being done and why. I think it's much more valuable to provide working code as a reference that you can explore and play around with rather than writing pages explaining what each line of code does. 
 
@@ -18,19 +20,35 @@ To any non-beginners reading this: If you notice and mistakes/areas for improvem
 
 ## Building the source code
 
-Compilation is handled using simple batch (`.bat`) files. You will have to install [Visual Studio](https://visualstudio.microsoft.com/) to use the MSVC compiler if you haven't already (the Community version is free).
+Compilation for each sub-project is handled using a simple batch file called `build.bat`. You will have to install [Visual Studio](https://visualstudio.microsoft.com/) to use the MSVC compiler if you haven't already (the Community version is free).
 
-To call the Microsoft compiler from the command-line or in a batch file you need to call a special script call `vcvarsall`. In each `build.bat` script I've included a list of paths to this file for each version of Visual Studio. Uncomment only the one you have installed in each batch file and you should be good to go.
+To call the Microsoft compiler from the command-line or in a batch file you need to set up your command line environment so it knows where to find the compiler executable (this is weird and it's a bit annoying that installing Visual Studio doesn't just handle this for you). There are two ways to do this: 
+* The easiest is to use the special command prompt that Visual Studio sets up for you on installation. For VS2019 it is called "Developer Command Prompt for VS 2019". If you open the Start menu and search `vs` it should show up. 
+* Alternatively you can open a regular command prompt and call a special script named `vcvarsall`. You can (hopefully) find it in one of the following locations, depending on the version of Visual Studio you're using:
+```
+C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat
+C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\vcvarsall.bat
+C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat
+C:\Program Files (x86)\Microsoft Visual Studio 13.0\VC\vcvarsall.bat
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
+C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat
+```
 
-Once you have all that done, compiling should be as easy as opening a command line window, navigating to a directory containing a `build.bat` script and running it like so:
-
+Once you have your command line set up in either way, you can compile each subproject by navigating with `cd` to a directory containing a `build.bat` script and running it like so:
 ```
 build.bat
 ```
 
-This will create a build directory containing an executable `main.exe` that you can run.
+This will create a directory called `build` containing an executable `main.exe` that you can run.
 
-Additionally I have included configuration files for building/running the code using [VSCode](https://code.visualstudio.com/), my editor of choice. If you open one of the project folders in VSCode you should be able to build and run using the `Run Build Task` and `Start Debugging` commands.
+Additionally I have included configuration files for building/running the code using [VSCode](https://code.visualstudio.com/), my editor of choice. Once you have your command line interface set up as explained above simply run the command `code` to launch VS Code. Now if you open one of the project folders in VSCode you should be able to build and run using the `Run Build Task` and `Start Debugging` commands.
+
+If you try to build one of the subprojects and you get the following error message it means that you haven't set up your command line properly because it does not recognised the compiler executable `cl.exe`:
+```
+'cl' is not recognized as an internal or external command,
+operable program or batch file.
+```
 
 ## Resources
 These are online resources I found helpful when learning the basics of Direct3D11/Win32 programming.
