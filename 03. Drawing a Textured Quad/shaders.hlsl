@@ -6,7 +6,7 @@ struct VS_Input {
 
 struct VS_Output {
     float4 pos : SV_POSITION;
-    float2 uv : TEX;
+    float2 uv : TEXCOORD;
 };
 
 Texture2D    mytexture : register(t0);
