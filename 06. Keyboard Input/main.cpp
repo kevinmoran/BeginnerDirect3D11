@@ -21,16 +21,6 @@ enum GameAction {
 };
 static bool global_keyIsDown[GameActionCount] = {};
 
-double win32GetCurrentTimeInSeconds(LARGE_INTEGER perfCounterFrequency)
-{    
-    LARGE_INTEGER perfCount;
-    QueryPerformanceCounter(&perfCount);
-
-    double result = (double)perfCount.QuadPart / (double)perfCounterFrequency.QuadPart;
-
-    return result;
-}
-
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     LRESULT result = 0;
@@ -330,25 +320,37 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
         assert(SUCCEEDED(hResult));
     }
 
-    // Timing
-    LARGE_INTEGER perfCounterFrequency;
-    QueryPerformanceFrequency(&perfCounterFrequency);
-
     // Game data
     float2 playerPos = {};
 
-    double currentTimeInSeconds = win32GetCurrentTimeInSeconds(perfCounterFrequency);
+    // Timing
+    LONGLONG startPerfCount = 0;
+    LONGLONG perfCounterFrequency = 0;
+    {
+        LARGE_INTEGER perfCount;
+        QueryPerformanceCounter(&perfCount);
+        startPerfCount = perfCount.QuadPart;
+        LARGE_INTEGER perfFreq;
+        QueryPerformanceFrequency(&perfFreq);
+        perfCounterFrequency = perfFreq.QuadPart;
+    }
+    double currentTimeInSeconds = 0.0;
 
     // Main Loop
     bool isRunning = true;
     while(isRunning)
     {
-        double previousTimeInSeconds = currentTimeInSeconds;
-        currentTimeInSeconds = win32GetCurrentTimeInSeconds(perfCounterFrequency);
-        float dt = (float)(currentTimeInSeconds - previousTimeInSeconds);
+        float dt;
+        {
+            double previousTimeInSeconds = currentTimeInSeconds;
+            LARGE_INTEGER perfCount;
+            QueryPerformanceCounter(&perfCount);
 
-        if(dt > (1.f / 60.f))
-            dt = (1.f / 60.f);
+            currentTimeInSeconds = (double)(perfCount.QuadPart - startPerfCount) / (double)perfCounterFrequency;
+            dt = (float)(currentTimeInSeconds - previousTimeInSeconds);
+            if(dt > (1.f / 60.f))
+                dt = (1.f / 60.f);
+        }
 
         MSG msg = {};
         while(PeekMessageW(&msg, 0, 0, 0, PM_REMOVE))
