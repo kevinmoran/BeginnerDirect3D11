@@ -314,6 +314,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
         vsBlob->Release();
     }
 
+    // Create Vertex and Index Buffer
     ID3D11Buffer* vertexBuffer;
     ID3D11Buffer* indexBuffer;
     // UINT numVerts;
@@ -350,19 +351,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
     }
 
     // Create Sampler State
-    D3D11_SAMPLER_DESC samplerDesc = {};
-    samplerDesc.Filter         = D3D11_FILTER_MIN_MAG_MIP_POINT;
-    samplerDesc.AddressU       = D3D11_TEXTURE_ADDRESS_BORDER;
-    samplerDesc.AddressV       = D3D11_TEXTURE_ADDRESS_BORDER;
-    samplerDesc.AddressW       = D3D11_TEXTURE_ADDRESS_BORDER;
-    samplerDesc.BorderColor[0] = 1.0f;
-    samplerDesc.BorderColor[1] = 1.0f;
-    samplerDesc.BorderColor[2] = 1.0f;
-    samplerDesc.BorderColor[3] = 1.0f;
-    samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-
     ID3D11SamplerState* samplerState;
-    d3d11Device->CreateSamplerState(&samplerDesc, &samplerState);
+    {
+        D3D11_SAMPLER_DESC samplerDesc = {};
+        samplerDesc.Filter         = D3D11_FILTER_MIN_MAG_MIP_POINT;
+        samplerDesc.AddressU       = D3D11_TEXTURE_ADDRESS_BORDER;
+        samplerDesc.AddressV       = D3D11_TEXTURE_ADDRESS_BORDER;
+        samplerDesc.AddressW       = D3D11_TEXTURE_ADDRESS_BORDER;
+        samplerDesc.BorderColor[0] = 1.0f;
+        samplerDesc.BorderColor[1] = 1.0f;
+        samplerDesc.BorderColor[2] = 1.0f;
+        samplerDesc.BorderColor[3] = 1.0f;
+        samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+
+        d3d11Device->CreateSamplerState(&samplerDesc, &samplerState);
+    }
     
     // Load Image
     int texWidth, texHeight, texNumChannels;
@@ -373,25 +376,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
     int texBytesPerRow = 4 * texWidth;
 
     // Create Texture
-    D3D11_TEXTURE2D_DESC textureDesc = {};
-    textureDesc.Width              = texWidth;
-    textureDesc.Height             = texHeight;
-    textureDesc.MipLevels          = 1;
-    textureDesc.ArraySize          = 1;
-    textureDesc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-    textureDesc.SampleDesc.Count   = 1;
-    textureDesc.Usage              = D3D11_USAGE_IMMUTABLE;
-    textureDesc.BindFlags          = D3D11_BIND_SHADER_RESOURCE;
-
-    D3D11_SUBRESOURCE_DATA textureSubresourceData = {};
-    textureSubresourceData.pSysMem = testTextureBytes;
-    textureSubresourceData.SysMemPitch = texBytesPerRow;
-
-    ID3D11Texture2D* texture;
-    d3d11Device->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
-
     ID3D11ShaderResourceView* textureView;
-    d3d11Device->CreateShaderResourceView(texture, nullptr, &textureView);
+    {
+        D3D11_TEXTURE2D_DESC textureDesc = {};
+        textureDesc.Width              = texWidth;
+        textureDesc.Height             = texHeight;
+        textureDesc.MipLevels          = 1;
+        textureDesc.ArraySize          = 1;
+        textureDesc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+        textureDesc.SampleDesc.Count   = 1;
+        textureDesc.Usage              = D3D11_USAGE_IMMUTABLE;
+        textureDesc.BindFlags          = D3D11_BIND_SHADER_RESOURCE;
+
+        D3D11_SUBRESOURCE_DATA textureSubresourceData = {};
+        textureSubresourceData.pSysMem = testTextureBytes;
+        textureSubresourceData.SysMemPitch = texBytesPerRow;
+
+        ID3D11Texture2D* texture;
+        d3d11Device->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture);
+
+        d3d11Device->CreateShaderResourceView(texture, nullptr, &textureView);
+        texture->Release();
+    }
 
     free(testTextureBytes);
 
@@ -433,9 +439,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
 
         d3d11Device->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
     }
-
-    // Game data
-    float2 playerPos = {};
 
     // Camera
     float3 cameraPos = {0, 0, 2};
@@ -556,19 +559,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
 
         // Calculate view matrix from camera data
         // 
-        // float4x4 viewMat = inverse(translationMat(cameraPos) * rotateYMat(cameraYaw) * rotateXMat(cameraPitch));
+        // float4x4 viewMat = inverse(rotateXMat(cameraPitch) * rotateYMat(cameraYaw) * translationMat(cameraPos));
         // NOTE: We can simplify this calculation to avoid inverse()!
         // Applying the rule inverse(A*B) = inverse(B) * inverse(A) gives:
-        // float4x4 viewMat = inverse(rotateXMat(cameraPitch)) * inverse(rotateYMat(cameraYaw)) * inverse(translationMat(cameraPos));
+        // float4x4 viewMat = inverse(translationMat(cameraPos)) * inverse(rotateYMat(cameraYaw)) * inverse(rotateXMat(cameraPitch));
         // The inverse of a rotation/translation is a negated rotation/translation:
-        float4x4 viewMat = rotateXMat(-cameraPitch) * rotateYMat(-cameraYaw) * translationMat(-cameraPos);
-        cameraFwd = {viewMat.m[2][0], viewMat.m[2][1], -viewMat.m[2][2]};
+        float4x4 viewMat = translationMat(-cameraPos) * rotateYMat(-cameraYaw) * rotateXMat(-cameraPitch);
+        // Update the forward vector we use for camera movement:
+        cameraFwd = {viewMat.m[0][2], viewMat.m[1][2], -viewMat.m[2][2]};
 
         // Spin the cube
-        float4x4 modelMat = rotateYMat(0.1f * (float)(M_PI * currentTimeInSeconds)) * rotateXMat(-0.2f * (float)(M_PI * currentTimeInSeconds));
+        float4x4 modelMat = rotateXMat(-0.2f * (float)(M_PI * currentTimeInSeconds)) * rotateYMat(0.1f * (float)(M_PI * currentTimeInSeconds)) ;
         
-        // Copy model-view-projection matrix to uniform buffer
-        float4x4 modelViewProj = perspectiveMat * viewMat * modelMat;
+        // Calculate model-view-projection matrix to send to shader
+        float4x4 modelViewProj = modelMat * viewMat * perspectiveMat;
 
         // Update constant buffer
         D3D11_MAPPED_SUBRESOURCE mappedSubresource;

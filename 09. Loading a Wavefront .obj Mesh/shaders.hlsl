@@ -20,7 +20,7 @@ SamplerState mysampler : register(s0);
 VS_Output vs_main(VS_Input input)
 {
     VS_Output output;
-    output.pos = mul(modelViewProj, float4(input.pos, 1.0f));
+    output.pos = mul(float4(input.pos, 1.0f), modelViewProj);
     // This is just a dumb bit of maths to color our unit cube nicely
     output.uv = input.uv;
     return output;

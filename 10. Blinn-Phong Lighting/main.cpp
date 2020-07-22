@@ -311,7 +311,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
         lightVsCode->Release();
     }
 
-    // Create Vertex Shader for rendering our lit object
+    // Create Vertex Shader for rendering our lit objects
     ID3DBlob* blinnPhongVsCode;
     ID3D11VertexShader* blinnPhongVertexShader;
     {
@@ -333,7 +333,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
         assert(SUCCEEDED(hResult));
     }
 
-    // Create Pixel Shader for rendering our lit object
+    // Create Pixel Shader for rendering our lit objects
     ID3D11PixelShader* blinnPhongPixelShader;
     {
         ID3DBlob* psBlob;
@@ -371,6 +371,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
         blinnPhongVsCode->Release();
     }
 
+    // Create Vertex and Index Buffer
     ID3D11Buffer* cubeVertexBuffer;
     ID3D11Buffer* cubeIndexBuffer;
     UINT cubeNumIndices;
@@ -667,14 +668,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
 
         // Calculate view matrix from camera data
         // 
-        // float4x4 viewMat = inverse(translationMat(cameraPos) * rotateYMat(cameraYaw) * rotateXMat(cameraPitch));
+        // float4x4 viewMat = inverse(rotateXMat(cameraPitch) * rotateYMat(cameraYaw) * translationMat(cameraPos));
         // NOTE: We can simplify this calculation to avoid inverse()!
         // Applying the rule inverse(A*B) = inverse(B) * inverse(A) gives:
-        // float4x4 viewMat = inverse(rotateXMat(cameraPitch)) * inverse(rotateYMat(cameraYaw)) * inverse(translationMat(cameraPos));
+        // float4x4 viewMat = inverse(translationMat(cameraPos)) * inverse(rotateYMat(cameraYaw)) * inverse(rotateXMat(cameraPitch));
         // The inverse of a rotation/translation is a negated rotation/translation:
-        float4x4 viewMat = rotateXMat(-cameraPitch) * rotateYMat(-cameraYaw) * translationMat(-cameraPos);
-        float4x4 inverseViewMat = translationMat(cameraPos) * rotateYMat(cameraYaw) * rotateXMat(cameraPitch);
-        cameraFwd = {viewMat.m[2][0], viewMat.m[2][1], -viewMat.m[2][2]};
+        float4x4 viewMat = translationMat(-cameraPos) * rotateYMat(-cameraYaw) * rotateXMat(-cameraPitch);
+        float4x4 inverseViewMat = rotateXMat(cameraPitch) * rotateYMat(cameraYaw) * translationMat(cameraPos);
+        // Update the forward vector we use for camera movement:
+        cameraFwd = {viewMat.m[0][2], viewMat.m[1][2], -viewMat.m[2][2]};
 
         // Calculate matrices for cubes
         const int NUM_CUBES = 3;
@@ -693,10 +695,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
             {
                 modelXRotation += 0.6f*i; // Add an offset so cubes have different phases
                 modelYRotation += 0.6f*i;
-                float4x4 modelMat = translationMat(cubePositions[i]) * rotateYMat(modelYRotation) * rotateXMat(modelXRotation);
-                float4x4 inverseModelMat = rotateXMat(-modelXRotation) * rotateYMat(-modelYRotation) * translationMat(-cubePositions[i]);
-                cubeModelViewMats[i] = viewMat * modelMat;
-                float4x4 inverseModelViewMat = inverseModelMat * inverseViewMat;
+                float4x4 modelMat = rotateXMat(modelXRotation) * rotateYMat(modelYRotation) * translationMat(cubePositions[i]);
+                float4x4 inverseModelMat = translationMat(-cubePositions[i]) * rotateYMat(-modelYRotation) * rotateXMat(-modelXRotation);
+                cubeModelViewMats[i] = modelMat * viewMat;
+                float4x4 inverseModelViewMat = inverseViewMat * inverseModelMat;
                 cubeNormalMats[i] = float4x4ToFloat3x3(transpose(inverseModelViewMat));
             }
         }
@@ -719,8 +721,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
             for(int i=0; i<NUM_LIGHTS; ++i)
             {
                 lightRotation += 0.5f*i; // Add an offset so lights have different phases
-                lightModelViewMats[i] = viewMat * rotateYMat(lightRotation) * translationMat(initialPointLightPositions[i].xyz) * scaleMat(0.2f);
-                pointLightPosEye[i] = {lightModelViewMats[i].m[3][0], lightModelViewMats[i].m[3][1], lightModelViewMats[i].m[3][2], 1};
+                                        
+                lightModelViewMats[i] = scaleMat(0.2f) * translationMat(initialPointLightPositions[i].xyz) * rotateYMat(lightRotation) * viewMat;
+                pointLightPosEye[i] = lightModelViewMats[i].cols[3];
             }
         }
 
@@ -754,7 +757,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
                 D3D11_MAPPED_SUBRESOURCE mappedSubresource;
                 d3d11DeviceContext->Map(lightVSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubresource);
                 LightVSConstants* constants = (LightVSConstants*)(mappedSubresource.pData);
-                constants->modelViewProj = perspectiveMat * lightModelViewMats[i];
+                constants->modelViewProj = lightModelViewMats[i] * perspectiveMat;
                 constants->color = lightColor[i];
                 d3d11DeviceContext->Unmap(lightVSConstantBuffer, 0);
 
@@ -793,7 +796,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
                 D3D11_MAPPED_SUBRESOURCE mappedSubresource;
                 d3d11DeviceContext->Map(blinnPhongVSConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubresource);
                 BlinnPhongVSConstants* constants = (BlinnPhongVSConstants*)(mappedSubresource.pData);
-                constants->modelViewProj = perspectiveMat * cubeModelViewMats[i];
+                constants->modelViewProj = cubeModelViewMats[i] * perspectiveMat;
                 constants->modelView = cubeModelViewMats[i];
                 constants->normalMatrix = cubeNormalMats[i];
                 d3d11DeviceContext->Unmap(blinnPhongVSConstantBuffer, 0);

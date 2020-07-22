@@ -44,9 +44,9 @@ SamplerState mysampler : register(s0);
 VS_Output vs_main(VS_Input input)
 {
     VS_Output output;
-    output.pos = mul(modelViewProj, float4(input.pos, 1.0f));
-    output.posEye = mul(modelView, float4(input.pos, 1.0f)).xyz;
-    output.normalEye = mul(normalMatrix, float4(input.norm, 1.0f).xyz);
+    output.pos = mul(float4(input.pos, 1.0f), modelViewProj);
+    output.posEye = mul(float4(input.pos, 1.0f), modelView).xyz;
+    output.normalEye = mul(input.norm, normalMatrix);
     output.uv = input.uv;
     return output;
 }

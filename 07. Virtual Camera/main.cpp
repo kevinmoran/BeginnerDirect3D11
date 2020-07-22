@@ -395,9 +395,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
         d3d11Device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
     }
 
-    // Game data
-    float2 playerPos = {};
-
     // Camera
     float3 cameraPos = {0, 0, 2};
     float3 cameraFwd = {0, 0, -1};
@@ -479,62 +476,65 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
         }
 
         // Update camera
-        float3 camFwdXZ = normalise({cameraFwd.x, 0, cameraFwd.z});
-        float3 cameraRightXZ = cross(camFwdXZ, {0, 1, 0});
+        {
+            float3 camFwdXZ = normalise({cameraFwd.x, 0, cameraFwd.z});
+            float3 cameraRightXZ = cross(camFwdXZ, {0, 1, 0});
 
-        const float CAM_MOVE_SPEED = 5.f; // in metres per second
-        const float CAM_MOVE_AMOUNT = CAM_MOVE_SPEED * dt;
-        if(global_keyIsDown[GameActionMoveCamFwd])
-            cameraPos += camFwdXZ * CAM_MOVE_AMOUNT;
-        if(global_keyIsDown[GameActionMoveCamBack])
-            cameraPos -= camFwdXZ * CAM_MOVE_AMOUNT;
-        if(global_keyIsDown[GameActionMoveCamLeft])
-            cameraPos -= cameraRightXZ * CAM_MOVE_AMOUNT;
-        if(global_keyIsDown[GameActionMoveCamRight])
-            cameraPos += cameraRightXZ * CAM_MOVE_AMOUNT;
-        if(global_keyIsDown[GameActionRaiseCam])
-            cameraPos.y += CAM_MOVE_AMOUNT;
-        if(global_keyIsDown[GameActionLowerCam])
-            cameraPos.y -= CAM_MOVE_AMOUNT;
-        
-        const float CAM_TURN_SPEED = M_PI; // in radians per second
-        const float CAM_TURN_AMOUNT = CAM_TURN_SPEED * dt;
-        if(global_keyIsDown[GameActionTurnCamLeft])
-            cameraYaw += CAM_TURN_AMOUNT;
-        if(global_keyIsDown[GameActionTurnCamRight])
-            cameraYaw -= CAM_TURN_AMOUNT;
-        if(global_keyIsDown[GameActionLookUp])
-            cameraPitch += CAM_TURN_AMOUNT;
-        if(global_keyIsDown[GameActionLookDown])
-            cameraPitch -= CAM_TURN_AMOUNT;
+            const float CAM_MOVE_SPEED = 5.f; // in metres per second
+            const float CAM_MOVE_AMOUNT = CAM_MOVE_SPEED * dt;
+            if(global_keyIsDown[GameActionMoveCamFwd])
+                cameraPos += camFwdXZ * CAM_MOVE_AMOUNT;
+            if(global_keyIsDown[GameActionMoveCamBack])
+                cameraPos -= camFwdXZ * CAM_MOVE_AMOUNT;
+            if(global_keyIsDown[GameActionMoveCamLeft])
+                cameraPos -= cameraRightXZ * CAM_MOVE_AMOUNT;
+            if(global_keyIsDown[GameActionMoveCamRight])
+                cameraPos += cameraRightXZ * CAM_MOVE_AMOUNT;
+            if(global_keyIsDown[GameActionRaiseCam])
+                cameraPos.y += CAM_MOVE_AMOUNT;
+            if(global_keyIsDown[GameActionLowerCam])
+                cameraPos.y -= CAM_MOVE_AMOUNT;
+            
+            const float CAM_TURN_SPEED = M_PI; // in radians per second
+            const float CAM_TURN_AMOUNT = CAM_TURN_SPEED * dt;
+            if(global_keyIsDown[GameActionTurnCamLeft])
+                cameraYaw += CAM_TURN_AMOUNT;
+            if(global_keyIsDown[GameActionTurnCamRight])
+                cameraYaw -= CAM_TURN_AMOUNT;
+            if(global_keyIsDown[GameActionLookUp])
+                cameraPitch += CAM_TURN_AMOUNT;
+            if(global_keyIsDown[GameActionLookDown])
+                cameraPitch -= CAM_TURN_AMOUNT;
 
-        // Wrap yaw to avoid floating-point errors if we turn too far
-        while(cameraYaw >= 2*M_PI) 
-            cameraYaw -= 2*M_PI;
-        while(cameraYaw <= -2*M_PI) 
-            cameraYaw += 2*M_PI;
+            // Wrap yaw to avoid floating-point errors if we turn too far
+            while(cameraYaw >= 2*M_PI) 
+                cameraYaw -= 2*M_PI;
+            while(cameraYaw <= -2*M_PI) 
+                cameraYaw += 2*M_PI;
 
-        // Clamp pitch to stop camera flipping upside down
-        if(cameraPitch > degreesToRadians(85)) 
-            cameraPitch = degreesToRadians(85);
-        if(cameraPitch < -degreesToRadians(85)) 
-            cameraPitch = -degreesToRadians(85);
+            // Clamp pitch to stop camera flipping upside down
+            if(cameraPitch > degreesToRadians(85)) 
+                cameraPitch = degreesToRadians(85);
+            if(cameraPitch < -degreesToRadians(85)) 
+                cameraPitch = -degreesToRadians(85);
+        }
 
         // Calculate view matrix from camera data
         // 
-        // float4x4 viewMat = inverse(translationMat(cameraPos) * rotateYMat(cameraYaw) * rotateXMat(cameraPitch));
+        // float4x4 viewMat = inverse(rotateXMat(cameraPitch) * rotateYMat(cameraYaw) * translationMat(cameraPos));
         // NOTE: We can simplify this calculation to avoid inverse()!
         // Applying the rule inverse(A*B) = inverse(B) * inverse(A) gives:
-        // float4x4 viewMat = inverse(rotateXMat(cameraPitch)) * inverse(rotateYMat(cameraYaw)) * inverse(translationMat(cameraPos));
+        // float4x4 viewMat = inverse(translationMat(cameraPos)) * inverse(rotateYMat(cameraYaw)) * inverse(rotateXMat(cameraPitch));
         // The inverse of a rotation/translation is a negated rotation/translation:
-        float4x4 viewMat = rotateXMat(-cameraPitch) * rotateYMat(-cameraYaw) * translationMat(-cameraPos);
-        cameraFwd = {viewMat.m[2][0], viewMat.m[2][1], -viewMat.m[2][2]};
+        float4x4 viewMat = translationMat(-cameraPos) * rotateYMat(-cameraYaw) * rotateXMat(-cameraPitch);
+        // Update the forward vector we use for camera movement:
+        cameraFwd = {viewMat.m[0][2], viewMat.m[1][2], -viewMat.m[2][2]};
 
         // Spin the quad
-        float4x4 modelMat = rotateYMat(0.3f * (float)(M_PI * currentTimeInSeconds));
+        float4x4 modelMat = rotateYMat(0.2f * (float)(M_PI * currentTimeInSeconds));
         
-        // Copy model-view-projection matrix to uniform buffer
-        float4x4 modelViewProj = perspectiveMat * viewMat * modelMat;
+        // Calculate model-view-projection matrix to send to shader
+        float4x4 modelViewProj = modelMat * viewMat * perspectiveMat;
 
         // Update constant buffer
         D3D11_MAPPED_SUBRESOURCE mappedSubresource;

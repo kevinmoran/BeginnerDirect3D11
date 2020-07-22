@@ -17,7 +17,7 @@ struct VertexShaderOutput {
 VertexShaderOutput vs_main(VertexShaderInput input)
 {
     VertexShaderOutput output;
-    output.pos = mul(modelViewProj, float4(input.pos, 1.0f));
+    output.pos = mul(float4(input.pos, 1.0f), modelViewProj);
     output.color = color;
     return output;
 }
