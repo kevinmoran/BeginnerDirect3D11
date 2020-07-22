@@ -38,7 +38,7 @@ bool win32CreateD3D11RenderTargets(ID3D11Device1* d3d11Device, IDXGISwapChain1* 
     HRESULT hResult = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&d3d11FrameBuffer);
     assert(SUCCEEDED(hResult));
 
-    hResult = d3d11Device->CreateRenderTargetView(d3d11FrameBuffer, 0, &*d3d11FrameBufferView);
+    hResult = d3d11Device->CreateRenderTargetView(d3d11FrameBuffer, 0, d3d11FrameBufferView);
     assert(SUCCEEDED(hResult));
 
     D3D11_TEXTURE2D_DESC depthBufferDesc;
@@ -52,7 +52,7 @@ bool win32CreateD3D11RenderTargets(ID3D11Device1* d3d11Device, IDXGISwapChain1* 
     ID3D11Texture2D* depthBuffer;
     d3d11Device->CreateTexture2D(&depthBufferDesc, nullptr, &depthBuffer);
 
-    d3d11Device->CreateDepthStencilView(depthBuffer, nullptr, &*depthBufferView);
+    d3d11Device->CreateDepthStencilView(depthBuffer, nullptr, depthBufferView);
 
     depthBuffer->Release();
 
