@@ -197,32 +197,32 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
     }
 #endif
 
-    // Get DXGI Factory (needed to create Swap Chain)
-    IDXGIFactory2* dxgiFactory;
-    {
-        IDXGIDevice1* dxgiDevice;
-        HRESULT hResult = d3d11Device->QueryInterface(__uuidof(IDXGIDevice1), (void**)&dxgiDevice);
-        assert(SUCCEEDED(hResult));
-
-        IDXGIAdapter* dxgiAdapter;
-        hResult = dxgiDevice->GetAdapter(&dxgiAdapter);
-        assert(SUCCEEDED(hResult));
-        dxgiDevice->Release();
-
-        DXGI_ADAPTER_DESC adapterDesc;
-        dxgiAdapter->GetDesc(&adapterDesc);
-
-        OutputDebugStringA("Graphics Device: ");
-        OutputDebugStringW(adapterDesc.Description);
-
-        hResult = dxgiAdapter->GetParent(__uuidof(IDXGIFactory2), (void**)&dxgiFactory);
-        assert(SUCCEEDED(hResult));
-        dxgiAdapter->Release();
-    }
-    
     // Create Swap Chain
     IDXGISwapChain1* d3d11SwapChain;
     {
+        // Get DXGI Factory (needed to create Swap Chain)
+        IDXGIFactory2* dxgiFactory;
+        {
+            IDXGIDevice1* dxgiDevice;
+            HRESULT hResult = d3d11Device->QueryInterface(__uuidof(IDXGIDevice1), (void**)&dxgiDevice);
+            assert(SUCCEEDED(hResult));
+
+            IDXGIAdapter* dxgiAdapter;
+            hResult = dxgiDevice->GetAdapter(&dxgiAdapter);
+            assert(SUCCEEDED(hResult));
+            dxgiDevice->Release();
+
+            DXGI_ADAPTER_DESC adapterDesc;
+            dxgiAdapter->GetDesc(&adapterDesc);
+
+            OutputDebugStringA("Graphics Device: ");
+            OutputDebugStringW(adapterDesc.Description);
+
+            hResult = dxgiAdapter->GetParent(__uuidof(IDXGIFactory2), (void**)&dxgiFactory);
+            assert(SUCCEEDED(hResult));
+            dxgiAdapter->Release();
+        }
+        
         DXGI_SWAP_CHAIN_DESC1 d3d11SwapChainDesc = {};
         d3d11SwapChainDesc.Width = 0; // use window width
         d3d11SwapChainDesc.Height = 0; // use window height
@@ -238,6 +238,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
 
         HRESULT hResult = dxgiFactory->CreateSwapChainForHwnd(d3d11Device, hwnd, &d3d11SwapChainDesc, 0, 0, &d3d11SwapChain);
         assert(SUCCEEDED(hResult));
+
+        dxgiFactory->Release();
     }
 
     // Create Render Target and Depth Buffer
