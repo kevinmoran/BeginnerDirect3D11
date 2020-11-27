@@ -676,7 +676,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
         float4x4 viewMat = translationMat(-cameraPos) * rotateYMat(-cameraYaw) * rotateXMat(-cameraPitch);
         float4x4 inverseViewMat = rotateXMat(cameraPitch) * rotateYMat(cameraYaw) * translationMat(cameraPos);
         // Update the forward vector we use for camera movement:
-        cameraFwd = {viewMat.m[0][2], viewMat.m[1][2], -viewMat.m[2][2]};
+        cameraFwd = {-viewMat.m[2][0], -viewMat.m[2][1], -viewMat.m[2][2]};
 
         // Calculate matrices for cubes
         const int NUM_CUBES = 3;

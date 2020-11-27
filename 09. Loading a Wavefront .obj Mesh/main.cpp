@@ -566,7 +566,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR /*lpC
         // The inverse of a rotation/translation is a negated rotation/translation:
         float4x4 viewMat = translationMat(-cameraPos) * rotateYMat(-cameraYaw) * rotateXMat(-cameraPitch);
         // Update the forward vector we use for camera movement:
-        cameraFwd = {viewMat.m[0][2], viewMat.m[1][2], -viewMat.m[2][2]};
+        cameraFwd = {-viewMat.m[2][0], -viewMat.m[2][1], -viewMat.m[2][2]};
 
         // Spin the cube
         float4x4 modelMat = rotateXMat(-0.2f * (float)(M_PI * currentTimeInSeconds)) * rotateYMat(0.1f * (float)(M_PI * currentTimeInSeconds)) ;
