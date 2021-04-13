@@ -2,13 +2,15 @@
 
 This is my starter code for Direct3D11 graphics programming on Windows in a simple, procedural (C-like) style.
 
+No external dependencies, uses [stb_image](https://github.com/nothings/stb) for loading textures and minimal CRT features.
+
 Released into the public domain under the Unlicense, see LICENSE.txt. No warranty is implied.
 
 ## Code style and ethos
 
 This repository is provided as the resource I wish I had for learning Direct3D11. While tutorials and other samples exist, they are often overcomplicated for simply illustrating basic usage of the API to a beginner. In particular I've seen the simplest code for drawing a triangle split up into several classes and files which make the code flow very hard to follow. 
 
-My goal is to provide a straightforward, linear series of API calls that you can follow along with; everything is written in a procedural (C-like) style rather than abstracting code away into container classes.
+My goal is to provide a straightforward, linear series of API calls that you can follow along with; everything is written in a procedural (C-like) style rather than abstracting code away into container classes. It is a simplified starting point to get you started instead of production-ready code.
 
 Additionally I have split this repo into smaller sub-projects that gradually introduce new concepts important for realtime graphics and game programming. Hopefully this makes approaching these topics a bit easier.
 
@@ -16,11 +18,11 @@ This is *not* intended to be a tutorial. If you are using this as a learning res
 
 To any beginners reading this: Learning a 3D graphics API is tricky. You invariably have to learn 10 new concepts at once at all times. Rather than learning from the bottom up (i.e. understanding *every* line of code before moving on) I advise you to try and get the general idea for most things as you go, play around and slowly build up your knowledge. You will probably feel a bit overwhelmed at times, but with patience and persistence you will eventually have 'Eureka' moments where things click into place. If you have any questions I'll be happy to answer them.
 
-To any non-beginners reading this: If you notice and mistakes/areas for improvement please let me know.
+To any non-beginners reading this: If you notice any mistakes/areas for improvement please let me know.
 
 ## Building the source code
 
-Compilation for each sub-project is handled using a simple batch file called `build.bat`. You will have to install [Visual Studio](https://visualstudio.microsoft.com/) to use the MSVC compiler if you haven't already (the Community version is free).
+Compilation for each sub-project is handled using a simple batch file called `build.bat`. You will have to install [Visual Studio](https://visualstudio.microsoft.com/) to use the MSVC compiler if you haven't already (the Community version is free). Or if you want to make your own Visual Studio or CMake projects it should be really easy, there are very few files and fairly straightforward compiler arguments!
 
 To call the Microsoft compiler from the command-line or in a batch file you need to set up your command line environment so it knows where to find the compiler executable (this is weird and it's a bit annoying that installing Visual Studio doesn't just handle this for you). There are two ways to do this: 
 * The easiest is to use the special command prompt that Visual Studio sets up for you on installation. For VS2019 it is called "Developer Command Prompt for VS 2019". If you open the Start menu and search `vs` it should show up. 
