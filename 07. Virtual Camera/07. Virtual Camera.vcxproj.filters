@@ -18,9 +18,9 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shaders.hlsl" />
+    <Image Include="testTexture.png" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="testTexture.png" />
+    <None Include="shaders.hlsl" />
   </ItemGroup>
 </Project>

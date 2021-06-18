@@ -6,10 +6,6 @@
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="BlinnPhong.hlsl" />
-    <FxCompile Include="Lights.hlsl" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ObjLoading.cpp" />
   </ItemGroup>
@@ -18,5 +14,9 @@
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="cube.obj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Lights.hlsl" />
+    <None Include="BlinnPhong.hlsl" />
   </ItemGroup>
 </Project>

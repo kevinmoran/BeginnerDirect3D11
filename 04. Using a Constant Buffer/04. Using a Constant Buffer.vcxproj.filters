@@ -7,14 +7,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shaders.hlsl" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3DMaths.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders.hlsl" />
   </ItemGroup>
 </Project>

@@ -25,9 +25,9 @@
     <ClCompile Include="ObjLoading.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shaders.hlsl" />
+    <CopyFileToFolders Include="cube.obj" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="cube.obj" />
+    <None Include="shaders.hlsl" />
   </ItemGroup>
 </Project>
