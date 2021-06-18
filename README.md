@@ -65,3 +65,6 @@ These are online resources I found helpful when learning the basics of Direct3D1
 * [Official Microsoft Programming Guide for Direct3D 11](https://docs.microsoft.com/en-us/windows/win32/direct3d11/dx-graphics-overviews)
 * ["Properly handling keyboard input" by Stefan Reinalter](https://blog.molecular-matters.com/2011/09/05/properly-handling-keyboard-input/). Great blog post exploring the different Windows input APIs and their idiosyncracies. [[WayBack Archive]](https://web.archive.org/web/20190406180221/https://blog.molecular-matters.com/2011/09/05/properly-handling-keyboard-input/)
 
+## Acknowledgements
+
+* Thanks to [chanibal](https://github.com/chanibal) for setting up a Visual Studio solution.
