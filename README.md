@@ -22,7 +22,9 @@ To any non-beginners reading this: If you notice any mistakes/areas for improvem
 
 ## Building the source code
 
-Compilation for each sub-project is handled using a simple batch file called `build.bat`. You will have to install [Visual Studio](https://visualstudio.microsoft.com/) to use the MSVC compiler if you haven't already (the Community version is free). Or if you want to make your own Visual Studio or CMake projects it should be really easy, there are very few files and fairly straightforward compiler arguments!
+Compilation for each sub-project is handled using a simple batch file called `build.bat`, you can also use the provided Visual Studio 2019 solution. 
+
+For using the solution or batch files, you will have to install [Visual Studio](https://visualstudio.microsoft.com/) to use the MSVC compiler if you haven't already (the Community version is free). Or if you want to make your own CMake projects it should be really easy, there are very few files and fairly straightforward compiler arguments!
 
 To call the Microsoft compiler from the command-line or in a batch file you need to set up your command line environment so it knows where to find the compiler executable (this is weird and it's a bit annoying that installing Visual Studio doesn't just handle this for you). There are two ways to do this: 
 * The easiest is to use the special command prompt that Visual Studio sets up for you on installation. For VS2019 it is called "Developer Command Prompt for VS 2019". If you open the Start menu and search `vs` it should show up. 
